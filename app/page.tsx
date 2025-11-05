@@ -144,7 +144,7 @@ export default function Home() {
                   className="animate-in fade-in slide-in-from-bottom-4 duration-500"
                   style={{animationDelay: `${index * 100}ms`}}
                 >
-                  <Link href={`/country/${country.label}`}>
+                  <Link href={`/country/${country.value}`}>
                     <DisplayCard country={country} />
                   </Link>
                 </div>
