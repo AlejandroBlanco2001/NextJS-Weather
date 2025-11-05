@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SingleCountryResponse, Weather } from "@/lib/types";
+import { Country, Weather } from "@/lib/types";
 
 const REST_COUNTRIES_API_URL = "https://restcountries.com/v3.1";
 const OPEN_METEO_API_URL = "https://api.open-meteo.com/v1/forecast"
@@ -66,14 +66,14 @@ export async function GET(request: NextRequest, { params }: RouteParams): Promis
         return NextResponse.json({ error: "Failed to fetch capital weather" }, { status: 500 });
     }
 
-    const transformedCountry: SingleCountryResponse = {
+    const transformedCountry: Country = {
         name: countryData.name,
-        capital: countryData.capital || [],
-        continent: countryData.continents || [],
-        currencies: countryData.currencies || {},
-        languages: countryData.languages || {},
-        flag: countryData.flag || '',
-        population: countryData.population || 0,
+        capital: countryData.capital || [''],
+        continent: countryData.continents || [''],
+        currencies: countryData.currencies,
+        languages: countryData.languages,
+        flag: countryData.flag,
+        population: countryData.population,
         weather: capitalWeather,
     };
 

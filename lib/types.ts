@@ -1,14 +1,5 @@
-export interface CountriesResponse {
-    name: {
-        common: string,
-        official: string,
-    },
+export interface CountriesResponse extends Country {
     cca2: string,
-    flag: string,
-    population: number,
-    capital: string | null,
-    languages: string[],
-    currencies: string[],
     region: string,
     subregion: string,
     area: number,
@@ -26,22 +17,33 @@ export interface Weather {
     };
 }
 
-
-export interface SingleCountryResponse {
+  
+export interface NewsArticle {
+    article_id: string;
+    title: string;
+    link: string;
+    description?: string;
+    pubDate?: string;
+    image_url?: string;
+    source_id?: string;
+    source_name?: string;
+  }
+  
+export interface Country {
     name: {
-        common: string;
-        official: string;
+      common: string;
+      official: string;
     };
     capital: string[];
     continent: string[];
     currencies: {
-        [key: string]: {
-            name: string;
-            symbol?: string;
-        };
+      [key: string]: {
+        name: string;
+        symbol?: string;
+      };
     };
     languages: {
-        [key: string]: string;
+      [key: string]: string;
     };
     flag: string;
     population: number;
