@@ -55,13 +55,13 @@ export default function CountryPage() {
   }, [id]);
 
   const fetchNews = useCallback(async (page: string | null = null) => {
-    if (!id || isLoadingNews) return;
+    if (!id || isLoadingNews || !country?.name?.common) return;
 
     try {
       setIsLoadingNews(true);
       const url = page 
-        ? `/api/country/${id}/news?page=${page}`
-        : `/api/country/${id}/news`;
+        ? `/api/country/${country.name.common}/news?page=${page}&country=${id}`
+        : `/api/country/${country.name.common}/news?country=${id}`;
       
       const response = await fetch(url);
       
@@ -79,7 +79,7 @@ export default function CountryPage() {
     } finally {
       setIsLoadingNews(false);
     }
-  }, [id, isLoadingNews]);
+  }, [id, isLoadingNews, country]);
 
   useEffect(() => {
     if (country && newsArticles.length === 0) {

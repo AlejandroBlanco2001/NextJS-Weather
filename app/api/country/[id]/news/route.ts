@@ -12,24 +12,14 @@ export async function GET(request: NextRequest, { params }: RouteParams): Promis
     const { id } = await params;
     const { searchParams } = new URL(request.url);
     const page = searchParams.get('page') || '';
+    const country = searchParams.get('country') || '';
 
     if (!id) {
         return NextResponse.json({ error: "Country ID is required" }, { status: 400 });
     }
 
     try {
-        // Fetch country name first to get news
-        const countryResponse = await fetch(`https://restcountries.com/v3.1/alpha/${id.toUpperCase()}?fields=name`);
-        
-        if (!countryResponse.ok) {
-            return NextResponse.json({ error: "Country not found" }, { status: 404 });
-        }
-
-        const countryData = await countryResponse.json();
-        const countryName = countryData.name.common;
-
-        // Fetch news with pagination
-        let newsUrl = `${NEWS_API_URL}latest?apikey=${process.env.NEWS_API_KEY}&q=${encodeURIComponent(countryName)}`;
+        let newsUrl = `${NEWS_API_URL}latest?apikey=${process.env.NEWS_API_KEY}&q=${encodeURIComponent(id)}&country=${encodeURIComponent(country)}`;
         
         if (page) {
             newsUrl += `&page=${page}`;
