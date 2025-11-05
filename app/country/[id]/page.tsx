@@ -1,10 +1,29 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink, Calendar, Newspaper } from "lucide-react";
+
+interface Weather {
+  temperature: number;
+  temperature_2m: number;
+  rain: number;
+  is_day: boolean;
+  precipitation: number;
+}
+
+interface NewsArticle {
+  article_id: string;
+  title: string;
+  link: string;
+  description?: string;
+  pubDate?: string;
+  image_url?: string;
+  source_id?: string;
+  source_name?: string;
+}
 
 interface Country {
   name: {
@@ -24,12 +43,19 @@ interface Country {
   };
   flag: string;
   population: number;
+  weather: Weather;
+  news: any;
 }
 
 export default function CountryPage() {
   const [country, setCountry] = useState<Country | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
+  const [newsPage, setNewsPage] = useState<string | null>(null);
+  const [hasMoreNews, setHasMoreNews] = useState(true);
+  const [isLoadingNews, setIsLoadingNews] = useState(false);
+  const observerTarget = useRef<HTMLDivElement>(null);
   const { id } = useParams();
 
   useEffect(() => {
@@ -64,9 +90,64 @@ export default function CountryPage() {
     fetchCountry();
   }, [id]);
 
+  const fetchNews = useCallback(async (page: string | null = null) => {
+    if (!id || isLoadingNews) return;
+
+    try {
+      setIsLoadingNews(true);
+      const url = page 
+        ? `/api/country/${id}/news?page=${page}`
+        : `/api/country/${id}/news`;
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch news');
+      }
+
+      const data = await response.json();
+      
+      setNewsArticles(prev => [...prev, ...(data.results || [])]);
+      setNewsPage(data.nextPage);
+      setHasMoreNews(!!data.nextPage);
+    } catch (err) {
+      console.error('Error fetching news:', err);
+    } finally {
+      setIsLoadingNews(false);
+    }
+  }, [id, isLoadingNews]);
+
+  useEffect(() => {
+    if (country && newsArticles.length === 0) {
+      fetchNews();
+    }
+  }, [country, fetchNews, newsArticles.length]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreNews && !isLoadingNews) {
+          fetchNews(newsPage);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMoreNews, isLoadingNews, newsPage, fetchNews]);
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="flex flex-col items-center space-y-4">
@@ -86,7 +167,7 @@ export default function CountryPage() {
 
   if (error || !country) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
@@ -111,7 +192,7 @@ export default function CountryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -303,6 +384,116 @@ export default function CountryPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* News Section with Infinite Scroll */}
+          <div className="mt-8">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+              <div className="flex items-center mb-6">
+                <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg mr-4">
+                  <Newspaper className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                    Latest News
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Recent news articles about {country.name.common}
+                  </p>
+                </div>
+              </div>
+
+              {newsArticles.length === 0 && !isLoadingNews ? (
+                <div className="text-center py-12">
+                  <div className="text-5xl mb-4">📰</div>
+                  <p className="text-gray-600 dark:text-gray-400">No news articles available at the moment.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {newsArticles.map((article) => (
+                    <a
+                      key={article.article_id}
+                      href={article.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block group"
+                    >
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 border border-gray-200 dark:border-gray-600">
+                        <div className="flex items-start gap-4">
+                          {article.image_url && (
+                            <div className="shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-600">
+                              <img
+                                src={article.image_url}
+                                alt={article.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <h4 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                                {article.title}
+                              </h4>
+                              <ExternalLink className="w-4 h-4 shrink-0 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                            </div>
+                            {article.description && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                                {article.description}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-4 mt-3 text-xs text-gray-500 dark:text-gray-500">
+                              {article.pubDate && (
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  <span>{new Date(article.pubDate).toLocaleDateString()}</span>
+                                </div>
+                              )}
+                              {article.source_name && (
+                                <div className="flex items-center">
+                                  <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full">
+                                    {article.source_name}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+
+                  {/* Infinite Scroll Observer Target */}
+                  <div ref={observerTarget} className="h-4" />
+
+                  {/* Loading Indicator */}
+                  {isLoadingNews && (
+                    <div className="flex justify-center py-8">
+                      <div className="flex flex-col items-center space-y-3">
+                        <div className="relative">
+                          <div className="animate-spin rounded-full h-10 w-10 border-3 border-orange-200 dark:border-gray-600"></div>
+                          <div className="animate-spin rounded-full h-10 w-10 border-3 border-orange-600 dark:border-orange-400 border-t-transparent absolute top-0 left-0"></div>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Loading more news...</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* End of News Indicator */}
+                  {!hasMoreNews && newsArticles.length > 0 && (
+                    <div className="text-center py-6">
+                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-full">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">You've reached the end</p>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
