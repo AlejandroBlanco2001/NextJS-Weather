@@ -3,7 +3,7 @@
 import { DisplayCard } from "@/components/ui/display-card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { useDebounce } from "@/lib/hooks/useDebounce";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 
 export default function Home() {
@@ -11,6 +11,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchCountry, setSearchCountry] = useState("");
+  
+  const searchCache = useRef<Map<string, any[]>>(new Map());
   
   const debouncedSearchCountry = useDebounce(searchCountry, 500);
 
@@ -35,10 +37,21 @@ export default function Home() {
         return;
       }
 
+      const normalizedQuery = debouncedSearchCountry.toLowerCase().trim();
+
+      if (searchCache.current.has(normalizedQuery)) {
+        setCountries(searchCache.current.get(normalizedQuery) || []);
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
         const data = await getCountries(debouncedSearchCountry);
+        
+        searchCache.current.set(normalizedQuery, data);
+        
         setCountries(data);
       } catch (error) {
         console.error('Error fetching countries:', error);
@@ -51,6 +64,9 @@ export default function Home() {
 
     fetchCountries();
   }, [debouncedSearchCountry]);
+
+  // Memoize the countries list to avoid unnecessary re-renders
+  const memoizedCountries = useMemo(() => countries, [countries]);
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -132,13 +148,13 @@ export default function Home() {
           </div>
         )}
         
-        {countries.length > 0 && (
+        {memoizedCountries.length > 0 && (
           <div className="mt-16 animate-in fade-in duration-500">
             <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-200 mb-8 text-center">
-              Search Results <span className="text-blue-600 dark:text-blue-400">({countries.length} {countries.length === 1 ? 'country' : 'countries'})</span>
+              Search Results <span className="text-blue-600 dark:text-blue-400">({memoizedCountries.length} {memoizedCountries.length === 1 ? 'country' : 'countries'})</span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {countries.map((country, index) => (
+              {memoizedCountries.map((country, index) => (
                 <div 
                   key={country.value} 
                   className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full"
@@ -153,7 +169,7 @@ export default function Home() {
           </div>
         )}
         
-        {!isLoading && !error && countries.length === 0 && (
+        {!isLoading && !error && memoizedCountries.length === 0 && (
           <div className="text-center mt-12">
             <div className="text-6xl mb-4">🔍</div>
             {searchCountry.length < 2 ? (
