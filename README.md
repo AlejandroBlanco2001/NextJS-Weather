@@ -59,81 +59,44 @@ When you click on a country, you get access to:
 
 ```mermaid
 graph TB
-    subgraph "Client Layer"
-        A[User Browser]
-        B[Home Page - Search]
-        C[Country Details Page]
+    subgraph Client
+        A[Browser: Home & Country Pages]
     end
 
-    subgraph "Next.js App Router"
-        D[/app/page.tsx]
-        E[/app/country/id/page.tsx]
+    subgraph Next.js App Router
+        D["/app/page.tsx"]
+        E["/app/country/[id]/page.tsx"]
         F[API Routes]
     end
 
-    subgraph "API Layer"
-        G[/api/countries/search]
-        H[/api/country/id]
-        I[/api/country/id/news]
+    subgraph API
+        G["/api/countries"]
+        H["/api/country"]
+        I["/api/news"]
     end
 
-    subgraph "Cache Layer"
-        J[Client-Side Cache - useRef Map]
-        K[Memoization - useMemo]
+    subgraph Cache
+        J[Client Cache]
     end
 
-    subgraph "External APIs"
-        L[REST Countries API]
-        M[Open-Meteo Weather API]
-        N[Open-Meteo Geocoding]
-        O[NewsData.io API]
+    subgraph External APIs
+        L[REST Countries]
+        M[Open-Meteo]
+        O[NewsData.io]
     end
 
-    subgraph "Data Processing"
-        P[Temperature Aggregation]
-        Q[Daily Averages]
-        R[News Pagination]
-    end
+    A --> D
+    A --> E
 
-    A --> B
-    A --> C
-    B --> D
-    C --> E
-    
+    D --> G --> L
+    E --> H --> L
+    E --> I --> O
+
+    H --> M
+
     D --> J
-    D --> G
-    E --> H
-    E --> I
-    
-    J -.Cached Results.-> D
-    K -.Optimized Renders.-> E
-    
-    G --> L
-    H --> L
-    H --> N
-    N --> M
-    M --> P
-    P --> Q
-    
-    I --> L
-    L --> O
-    O --> R
-    R --> I
-    
-    G -.Country List.-> D
-    H -.Country + Weather + History.-> E
-    I -.News Articles + Pagination.-> E
+    E --> J
 
-    style A fill:#e1f5ff
-    style J fill:#fff4e6
-    style K fill:#fff4e6
-    style L fill:#e8f5e9
-    style M fill:#e8f5e9
-    style N fill:#e8f5e9
-    style O fill:#e8f5e9
-    style P fill:#f3e5f5
-    style Q fill:#f3e5f5
-    style R fill:#f3e5f5
 ```
 
 ### **Data Flow**
