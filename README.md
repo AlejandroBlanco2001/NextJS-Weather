@@ -30,7 +30,7 @@ When you click on a country, you get access to:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### **Frontend**
 - **[Next.js 15](https://nextjs.org/)** - React framework with App Router for server and client components
