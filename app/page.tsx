@@ -10,7 +10,7 @@ export default function Home() {
   const [countries, setCountries] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchCountry, setSearchCountry] = useState("Co");
+  const [searchCountry, setSearchCountry] = useState("");
   
   const debouncedSearchCountry = useDebounce(searchCountry, 500);
 
