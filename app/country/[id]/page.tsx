@@ -20,6 +20,7 @@ export default function CountryPage() {
   const [isLoadingNews, setIsLoadingNews] = useState(false);
 
   const observerTarget = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { id } = useParams();
 
   useEffect(() => {
@@ -55,7 +56,7 @@ export default function CountryPage() {
   }, [id]);
 
   const fetchNews = useCallback(async (page: string | null = null) => {
-    if (!id || isLoadingNews || !country?.name?.common) return;
+    if (!id || !country?.name?.common) return;
 
     try {
       setIsLoadingNews(true);
@@ -79,19 +80,29 @@ export default function CountryPage() {
     } finally {
       setIsLoadingNews(false);
     }
-  }, [id, isLoadingNews, country]);
+  }, [id, country]);
 
   useEffect(() => {
-    if (country && newsArticles.length === 0) {
+    if (country?.name?.common && newsArticles.length === 0 && !isLoadingNews) {
       fetchNews();
     }
-  }, [country, fetchNews, newsArticles.length]);
+    // Only run when country becomes available, not when fetchNews changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country?.name?.common]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMoreNews && !isLoadingNews) {
-          fetchNews(newsPage);
+          // Clear any existing timeout
+          if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+          }
+          
+          // Add a 2 second delay before fetching more news
+          scrollTimeoutRef.current = setTimeout(() => {
+            fetchNews(newsPage);
+          }, 2000);
         }
       },
       { threshold: 0.1 }
@@ -105,6 +116,10 @@ export default function CountryPage() {
     return () => {
       if (currentTarget) {
         observer.unobserve(currentTarget);
+      }
+      // Clean up timeout on unmount
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
       }
     };
   }, [hasMoreNews, isLoadingNews, newsPage, fetchNews]);

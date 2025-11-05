@@ -28,16 +28,11 @@ export async function GET(request: NextRequest, { params }: RouteParams): Promis
         const newsResponse = await fetch(newsUrl);
         
         if (!newsResponse.ok) {
-            return NextResponse.json({ error: "Failed to fetch news" }, { status: 500 });
+            return NextResponse.json({ error: "Failed to fetch news" }, { status: newsResponse.status });
         }
 
-        const newsData = await newsResponse.json();
-        
-        return NextResponse.json({
-            results: newsData.results || [],
-            nextPage: newsData.nextPage || null,
-            totalResults: newsData.totalResults || 0
-        });
+        const newsData = await newsResponse.json();        
+        return NextResponse.json(newsData);
 
     } catch (error) {
         console.error('Error fetching news:', error);
