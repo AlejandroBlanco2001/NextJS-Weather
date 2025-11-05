@@ -3,8 +3,8 @@
 import { DisplayCard } from "@/components/ui/display-card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { useDebounce } from "@/lib/hooks/useDebounce";
-
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function Home() {
   const [countries, setCountries] = useState<any[]>([]);
@@ -144,7 +144,9 @@ export default function Home() {
                   className="animate-in fade-in slide-in-from-bottom-4 duration-500"
                   style={{animationDelay: `${index * 100}ms`}}
                 >
-                  <DisplayCard country={country} />
+                  <Link href={`/country/${country.label}`}>
+                    <DisplayCard country={country} />
+                  </Link>
                 </div>
               ))}
             </div>

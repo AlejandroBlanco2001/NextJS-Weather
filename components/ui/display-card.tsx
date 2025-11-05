@@ -20,20 +20,15 @@ interface DisplayCardProps {
 
 export function DisplayCard({ country }: DisplayCardProps) {
   const formatPopulation = (pop: number) => {
-    if (pop >= 1000000) {
-      return `${(pop / 1000000).toFixed(1)}M`;
-    } else if (pop >= 1000) {
-      return `${(pop / 1000).toFixed(0)}K`;
-    }
-    return pop.toString();
+    return new Intl.NumberFormat('es-ES').format(pop);
   };
 
   const formatArea = (area: number) => {
-    return new Intl.NumberFormat().format(area);
+    return new Intl.NumberFormat('es-ES').format(area);
   };
 
   return (
-    <Card className="w-full max-w-md hover:shadow-lg transition-shadow duration-200 border-l-4 border-l-blue-500">
+    <Card className="w-full max-w-md hover:shadow-lg hover:scale-105 transition-all duration-200 border-l-4 border-l-blue-500 cursor-pointer">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
           {country.flag && (
