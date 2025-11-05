@@ -55,7 +55,7 @@ When you click on a country, you get access to:
 
 ---
 
-## 🏗️ Solution Architecture
+## Solution Architecture
 
 ```mermaid
 graph TB
