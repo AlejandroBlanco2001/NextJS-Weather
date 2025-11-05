@@ -112,13 +112,51 @@ graph TB
 
 ---
 
-## 🚀 Future Improvements
+## Architecture Decisions
+
+### **Why Next.js over React?**
+Next.js was chosen over vanilla React because it provides a complete framework with built-in features like:
+- Server-side rendering (SSR) and static site generation (SSG)
+- File-based routing with the App Router
+- Built-in API routes for backend functionality
+- Automatic code splitting and optimization
+- Image optimization out of the box
+
+This eliminates the need to install and configure multiple dependencies (routing, SSR, build tools, etc.) that would be required with plain React.
+
+### **Why Next.js API Routes over Backend Frameworks?**
+Next.js API Routes were chosen instead of separate backend frameworks (Nest.js/Express/Fastify) because:
+- The application primarily consumes third-party APIs (REST Countries, Open-Meteo, NewsData.io)
+- No need for complex backend tooling such as database connections, authentication, authorization, or rate limiting
+- Simplified deployment with a single codebase
+- Reduced infrastructure complexity and costs
+- Seamless integration between frontend and backend in one project
+
+### **Why shadcn/ui?**
+shadcn/ui was selected for rapid development because:
+- Pre-built, accessible components following WCAG standards
+- Full customization and ownership of component code
+- Faster development compared to building custom components from scratch
+- Modern, beautiful UI components with Tailwind CSS integration
+- Type-safe with TypeScript support
+
+### **Why Tailwind CSS?**
+Tailwind CSS was chosen over SCSS or plain CSS because:
+- Utility-first approach speeds up development significantly
+- Built-in responsive design utilities for mobile-first development
+- Consistent design system with predefined spacing, colors, and typography
+- Smaller bundle sizes with purged unused styles
+- Better developer experience with IntelliSense support
+- Easy to maintain and scale without CSS specificity issues
+
+## Future Improvements
 
 ### **Performance Enhancements**
 - [ ] Implement **Redis** for server-side caching with TTL
 - [ ] Add **React Query** for advanced cache management and background refetching
 - [ ] Implement **Image optimization** for country flags and news thumbnails
 - [ ] Implement **Code splitting** and lazy loading for route components
+- [ ] Implement **Generic** components
 
 ### **User Experience**
 - [ ] **Advanced Filters** - Filter by region, population range, language, etc.
