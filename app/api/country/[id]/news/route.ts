@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 const NEWS_API_URL = "https://newsdata.io/api/1/";
 
 interface RouteParams {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams): Promise<NextResponse> {

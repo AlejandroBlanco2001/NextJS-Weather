@@ -8,9 +8,9 @@ const FIELDS_TO_SEND_IN_REST_COUNTRIES_API = "name,capital,continents,currencies
 
 
 interface RouteParams {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams): Promise<NextResponse> {
