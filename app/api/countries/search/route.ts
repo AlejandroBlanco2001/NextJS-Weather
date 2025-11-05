@@ -1,8 +1,8 @@
 const REST_COUNTRIES_API_URL = "https://restcountries.com/v3.1";
+import { NextRequest, NextResponse } from "next/server";
+import { CountriesResponse } from "@/lib/types";
 
-import { NextResponse } from "next/server";
-
-export async function GET(request) {
+export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
 
@@ -24,21 +24,17 @@ export async function GET(request) {
 
         const data = await response.json();
         
-        const countries = data.map(country => ({
-            value: country.cca2.toLowerCase(),
-            label: country.name.common,
-            flag: country.flag || '',
+        const countries = data.map((country: CountriesResponse) => ({
+            value: country.value,
+            label: country.label,
+            flag: country.flag,
             population: country.population,
-            capital: country.capital ? country.capital[0] : null,
-            region: country.region,
-            subregion: country.subregion,
-            area: country.area,
-            languages: country.languages ? Object.values(country.languages) : [],
-            currencies: country.currencies ? Object.keys(country.currencies) : []
+            capital: country.capital,
+            languages: country.languages,
+            currencies: country.currencies
         }));
 
-        // Sort by relevance (exact matches first, then alphabetical)
-        const sortedCountries = countries.sort((a, b) => {
+        const sortedCountries = countries.sort((a: CountriesResponse, b: CountriesResponse) => {
             const aStartsWith = a.label.toLowerCase().startsWith(queryNormalized);
             const bStartsWith = b.label.toLowerCase().startsWith(queryNormalized);
             
@@ -48,9 +44,7 @@ export async function GET(request) {
             return a.label.localeCompare(b.label);
         });
 
-        // Limit results to prevent overwhelming the UI
-        return NextResponse.json(sortedCountries.slice(0, 10));
-        
+        return NextResponse.json(sortedCountries.slice(0, 10));        
     } catch (error) {
         console.error('Error searching countries:', error);
         return NextResponse.json({ error: "Failed to search countries" }, { status: 500 });
