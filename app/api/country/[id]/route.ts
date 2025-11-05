@@ -1,7 +1,6 @@
 const REST_COUNTRIES_API_URL = "https://restcountries.com/v3.1";
 const OPEN_METEO_API_URL = "https://api.open-meteo.com/v1/forecast"
 const OPEN_SEARCH = "https://geocoding-api.open-meteo.com/v1"
-const NEWS_API_URL = "https://newsdata.io/api/1/"
 const FIELDS_TO_SEND_IN_REST_COUNTRIES_API = "name,capital,continents,currencies,languages,flag,population";
 
 
@@ -11,6 +10,10 @@ interface Weather {
     rain: number;
     is_day: boolean;
     precipitation: number;
+    temperatureHistory?: {
+        dates: string[];
+        temperatures: number[];
+    };
 }
 
 
@@ -33,7 +36,6 @@ interface SingleCountryResponse {
     flag: string;
     population: number;
     weather: Weather;
-    news: any;
 }
 
 import { NextRequest, NextResponse } from "next/server";
@@ -80,12 +82,6 @@ export async function GET(request: NextRequest, { params }: RouteParams): Promis
             return NextResponse.json({ error: "Failed to fetch capital weather" }, { status: 500 });
         }
 
-        const news = await getNews(countryData.name.common);
-
-        if (!news) {
-            return NextResponse.json({ error: "Failed to fetch news" }, { status: 500 });
-        }
-
         const transformedCountry: SingleCountryResponse = {
             name: countryData.name,
             capital: countryData.capital || [],
@@ -95,7 +91,6 @@ export async function GET(request: NextRequest, { params }: RouteParams): Promis
             flag: countryData.flag || '',
             population: countryData.population || 0,
             weather: capitalWeather.current as Weather,
-            news: news || [],
         };
 
         return NextResponse.json(transformedCountry);
@@ -125,27 +120,73 @@ async function getCapitalCoordinates(capital: string) {
 
 async function getCapitalWeather(latitude: string, longitude: string) {
     try{
-        const response = await fetch(`${OPEN_METEO_API_URL}?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,rain,is_day,precipitation&format=json`);
+        // Get current date and date from 7 days ago
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
+        
+        const formatDate = (date: Date) => date.toISOString().split('T')[0];
+        
+        const response = await fetch(
+            `${OPEN_METEO_API_URL}?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,rain,precipitation&start_date=${formatDate(startDate)}&end_date=${formatDate(endDate)}&timezone=auto`
+        );
 
         if (!response.ok) {
             throw new Error('Failed to fetch capital weather');
         }
 
         const data = await response.json();
-        return data;
+        
+        // Get the last temperature_2m value from the 7-day period
+        const hourlyData = data.hourly;
+        const lastIndex = hourlyData.temperature_2m.length - 1;
+        
+        // Find the last valid temperature reading (not null)
+        let lastTemperature = hourlyData.temperature_2m[lastIndex];
+        let tempIndex = lastIndex;
+        while (lastTemperature === null && tempIndex > 0) {
+            tempIndex--;
+            lastTemperature = hourlyData.temperature_2m[tempIndex];
+        }
+        
+        // Prepare daily average temperatures for the graph (one value per day)
+        const dailyTemperatures: { date: string; temp: number }[] = [];
+        const temps = hourlyData.temperature_2m;
+        const times = hourlyData.time;
+        
+        // Group by date and calculate daily average
+        const dailyData: { [key: string]: number[] } = {};
+        for (let i = 0; i < temps.length; i++) {
+            if (temps[i] !== null) {
+                const date = times[i].split('T')[0];
+                if (!dailyData[date]) {
+                    dailyData[date] = [];
+                }
+                dailyData[date].push(temps[i]);
+            }
+        }
+        
+        // Calculate averages and sort by date
+        Object.keys(dailyData).sort().forEach(date => {
+            const values = dailyData[date];
+            const avg = values.reduce((a, b) => a + b, 0) / values.length;
+            dailyTemperatures.push({ date, temp: Math.round(avg * 10) / 10 });
+        });
+        
+        return {
+            current: {
+                temperature_2m: lastTemperature,
+                rain: hourlyData.rain[tempIndex] || 0,
+                precipitation: hourlyData.precipitation[tempIndex] || 0,
+                is_day: true, // Default since we can't determine from historical data
+                temperatureHistory: {
+                    dates: dailyTemperatures.map(d => d.date),
+                    temperatures: dailyTemperatures.map(d => d.temp)
+                }
+            }
+        };
     } catch (error) {
         console.error('Error fetching capital weather:', error);
-        return null;
-    }
-}
-
-async function getNews(country: string) {
-    try{
-        const response = await fetch(`${NEWS_API_URL}/latest?apikey=${process.env.NEWS_API_KEY}&country=${country}`);
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching news:', error);
         return null;
     }
 }

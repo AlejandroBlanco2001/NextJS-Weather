@@ -28,16 +28,16 @@ export function DisplayCard({ country }: DisplayCardProps) {
   };
 
   return (
-    <Card className="w-full max-w-md hover:shadow-lg hover:scale-105 transition-all duration-200 border-l-4 border-l-blue-500 cursor-pointer">
-      <CardHeader className="pb-3">
-        <div className="flex items-center gap-3">
+    <Card className="w-full h-full hover:shadow-xl hover:scale-[1.02] transition-all duration-200 border-l-4 border-l-blue-500 cursor-pointer bg-white dark:bg-gray-800">
+      <CardHeader className="pb-4">
+        <div className="flex items-center gap-4">
           {country.flag && (
-            <span className="text-3xl" role="img" aria-label={`${country.label} flag`}>
+            <span className="text-4xl" role="img" aria-label={`${country.label} flag`}>
               {country.flag}
             </span>
           )}
-          <div>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 truncate">
               {country.label}
             </CardTitle>
             {country.region && (
@@ -49,49 +49,55 @@ export function DisplayCard({ country }: DisplayCardProps) {
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         {country.capital && (
-          <div className="flex items-center gap-2 text-sm">
-            <MapPin className="h-4 w-4 text-blue-500" />
-            <span className="font-medium text-gray-700 dark:text-gray-300">Capital:</span>
-            <span className="text-gray-600 dark:text-gray-400">{country.capital}</span>
+          <div className="flex items-start gap-3 text-sm p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <MapPin className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="font-medium text-gray-700 dark:text-gray-300 block">Capital</span>
+              <span className="text-gray-600 dark:text-gray-400">{country.capital}</span>
+            </div>
           </div>
         )}
         
         {country.population && (
-          <div className="flex items-center gap-2 text-sm">
-            <Users className="h-4 w-4 text-green-500" />
-            <span className="font-medium text-gray-700 dark:text-gray-300">Population:</span>
-            <span className="text-gray-600 dark:text-gray-400">
-              {formatPopulation(country.population)}
-            </span>
+          <div className="flex items-start gap-3 text-sm p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+            <Users className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="font-medium text-gray-700 dark:text-gray-300 block">Population</span>
+              <span className="text-gray-600 dark:text-gray-400">
+                {formatPopulation(country.population)}
+              </span>
+            </div>
           </div>
         )}
         
         {country.area && (
-          <div className="flex items-center gap-2 text-sm">
-            <Globe className="h-4 w-4 text-purple-500" />
-            <span className="font-medium text-gray-700 dark:text-gray-300">Area:</span>
-            <span className="text-gray-600 dark:text-gray-400">
-              {formatArea(country.area)} km²
-            </span>
+          <div className="flex items-start gap-3 text-sm p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+            <Globe className="h-5 w-5 text-purple-500 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="font-medium text-gray-700 dark:text-gray-300 block">Area</span>
+              <span className="text-gray-600 dark:text-gray-400">
+                {formatArea(country.area)} km²
+              </span>
+            </div>
           </div>
         )}
         
         {country.languages && country.languages.length > 0 && (
-          <div className="text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-300">Languages:</span>
-            <div className="flex flex-wrap gap-1 mt-1">
+          <div className="text-sm p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <span className="font-medium text-gray-700 dark:text-gray-300 block mb-2">Languages</span>
+            <div className="flex flex-wrap gap-2">
               {country.languages.slice(0, 3).map((lang, index) => (
                 <span 
                   key={index}
-                  className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs"
+                  className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-medium"
                 >
                   {lang}
                 </span>
               ))}
               {country.languages.length > 3 && (
-                <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full text-xs">
+                <span className="px-3 py-1 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
                   +{country.languages.length - 3} more
                 </span>
               )}
@@ -100,13 +106,13 @@ export function DisplayCard({ country }: DisplayCardProps) {
         )}
         
         {country.currencies && country.currencies.length > 0 && (
-          <div className="text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-300">Currencies:</span>
-            <div className="flex flex-wrap gap-1 mt-1">
+          <div className="text-sm p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <span className="font-medium text-gray-700 dark:text-gray-300 block mb-2">Currencies</span>
+            <div className="flex flex-wrap gap-2">
               {country.currencies.map((currency, index) => (
                 <span 
                   key={index}
-                  className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-xs"
+                  className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-xs font-medium"
                 >
                   {currency}
                 </span>

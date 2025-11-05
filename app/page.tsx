@@ -53,23 +53,23 @@ export default function Home() {
   }, [debouncedSearchCountry]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <main className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <main className="container mx-auto px-4 py-12 max-w-7xl">
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-3">
             🌍 Global Pulse
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-10">
             Discover countries around the world
           </p>
           
-          <div className="w-full max-w-md mx-auto">
+          <div className="w-full max-w-2xl mx-auto">
             <FieldGroup>
               <Field>
-                <FieldLabel>Country</FieldLabel>
+                <FieldLabel className="text-lg mb-2">Search Country</FieldLabel>
                 <div className="relative">
                   <input
-                    className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 transition-all duration-200 dark:bg-gray-700 dark:text-white ${
+                    className={`w-full px-4 py-3 pr-12 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 text-base dark:bg-gray-700 dark:text-white ${
                       isLoading 
                         ? 'border-blue-400 focus:ring-blue-400 bg-blue-50 dark:bg-gray-600' 
                         : 'border-gray-300 focus:ring-blue-500 dark:border-gray-600'
@@ -80,18 +80,18 @@ export default function Home() {
                     onChange={(e) => setSearchCountry(e.target.value)}
                   />
                   {isLoading && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
                     </div>
                   )}
                   {!isLoading && searchCountry.length > 0 && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <span className="text-gray-400 dark:text-gray-500">🔍</span>
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      <span className="text-xl text-gray-400 dark:text-gray-500">🔍</span>
                     </div>
                   )}
                 </div>
                 {searchCountry.length > 0 && searchCountry.length < 2 && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                     Type at least 2 characters to search
                   </p>
                 )}
@@ -133,18 +133,18 @@ export default function Home() {
         )}
         
         {countries.length > 0 && (
-          <div className="mt-12 animate-in fade-in duration-500">
-            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6 text-center">
-              Search Results ({countries.length} countries)
+          <div className="mt-16 animate-in fade-in duration-500">
+            <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-200 mb-8 text-center">
+              Search Results <span className="text-blue-600 dark:text-blue-400">({countries.length} {countries.length === 1 ? 'country' : 'countries'})</span>
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {countries.map((country, index) => (
                 <div 
                   key={country.value} 
-                  className="animate-in fade-in slide-in-from-bottom-4 duration-500"
-                  style={{animationDelay: `${index * 100}ms`}}
+                  className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full"
+                  style={{animationDelay: `${index * 50}ms`}}
                 >
-                  <Link href={`/country/${country.value}`}>
+                  <Link href={`/country/${country.value}`} className="block h-full">
                     <DisplayCard country={country} />
                   </Link>
                 </div>
