@@ -25,16 +25,19 @@ export async function GET(request: NextRequest) {
         const data = await response.json();
         
         const countries = data.map((country: CountriesResponse) => ({
-            value: country.value,
-            label: country.label,
+            value: country.cca2.toLowerCase(),
+            label: country.name.common,
             flag: country.flag,
             population: country.population,
-            capital: country.capital,
-            languages: country.languages,
-            currencies: country.currencies
+            capital: country.capital ? country.capital[0] : null,
+            languages: country.languages ? Object.values(country.languages) : [],
+            currencies: country.currencies ? Object.keys(country.currencies) : [],
+            region: country.region,
+            subregion: country.subregion,
+            area: country.area,
         }));
 
-        const sortedCountries = countries.sort((a: CountriesResponse, b: CountriesResponse) => {
+        const sortedCountries = countries.sort((a: any, b: any) => {
             const aStartsWith = a.label.toLowerCase().startsWith(queryNormalized);
             const bStartsWith = b.label.toLowerCase().startsWith(queryNormalized);
             
